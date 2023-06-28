@@ -1,6 +1,6 @@
 import pyscipopt as scip
 import pandas as pd
-from data import RefineryData, ex_data
+from data import RefineryData
 
 
 class Planning:
@@ -52,8 +52,8 @@ class Planning:
 
         for j in J:
             for k in K:
-                self.model.addCons(scip.quicksum(Q[(i, k)] * self.b[i, j] for i in I) <= Pmax[(j, k)] * self.y[j])
-                self.model.addCons(scip.quicksum(Q[(i, k)] * self.b[i, j] for i in I) >= Pmin[(j, k)] * self.y[j])
+                self.model.addCons(scip.quicksum(Q[i][k] * self.b[i, j] for i in I) <= Pmax[j][k] * self.y[j])
+                self.model.addCons(scip.quicksum(Q[i][k] * self.b[i, j] for i in I) >= Pmin[j][k] * self.y[j])
 
         # obj
         obj = scip.quicksum(-C[i] * self.x[i] for i in I) + scip.quicksum(Price[j] * self.y[j] for j in J)
@@ -68,11 +68,7 @@ class Planning:
         result = pd.DataFrame(columns=self.data.J, index=self.data.K)
         for k in self.data.K:
             for j in self.data.J:
-                result.loc[k, j] = sum([self.data.Q[(i, k)] * self.model.getVal(self.b[i, j]) for i in self.data.I]) / \
+                result.loc[k, j] = sum([self.data.Q[i][k] * self.model.getVal(self.b[i, j]) for i in self.data.I]) / \
                                    self.model.getVal(self.y[j])
-        print(solution)
-        print(result)
-
-
-ex_model = Planning(ex_data)
-ex_model.solve()
+        results = {"目标值": self.model.getObjVal(), "调合配方": solution, "产品物性": result}
+        return results

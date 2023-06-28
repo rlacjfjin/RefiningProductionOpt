@@ -1,0 +1,5 @@
+/jenerate_json_data.py
+.idea
+__pycache__
+/notebook/.ipynb_checkpoints/
+.ipynb_checkpoints
